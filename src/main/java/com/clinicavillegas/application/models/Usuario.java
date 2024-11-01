@@ -67,7 +67,7 @@ public class Usuario implements UserDetails {
     @JoinColumn(name = "tipo_documento_id")
     private TipoDocumento tipoDocumento;
 
-    @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Cita> citas;
 

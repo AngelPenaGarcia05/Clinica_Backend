@@ -49,7 +49,7 @@ public class TipoReporte {
     @Column(name = "fecha_modificacion")
     private LocalDateTime fechaModificacion;
 
-    @OneToMany(mappedBy = "tipoTratamiento", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "tipoReporte", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Reporte> reportes;
     
