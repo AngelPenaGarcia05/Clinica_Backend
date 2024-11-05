@@ -11,6 +11,10 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+
 import java.time.LocalDateTime;
 
 @Getter
@@ -29,7 +33,13 @@ public class Cita {
     private BigDecimal monto;
     private LocalDate fecha;
     private LocalTime hora;
+
+    @CreatedDate
+    @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion;
+
+    @LastModifiedDate
+    @Column(name = "fecha_modificacion")
     private LocalDateTime fechaModificacion;
 
     @ManyToOne

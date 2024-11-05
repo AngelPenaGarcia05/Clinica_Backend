@@ -39,7 +39,7 @@ public class Dentista {
     private Long id;
 
     private String nColegiatura;
-    private String estado;
+    private boolean estado;
     private String especializacion;
     
     @CreatedDate

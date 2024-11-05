@@ -52,9 +52,8 @@ public class Usuario implements UserDetails {
     private String telefono;
     private LocalDate fechaNacimiento;
     private String correo;
-    private String direccion;
     private String imagenPerfil;
-    private String estado;
+    private boolean estado;
     @CreatedDate
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion;
