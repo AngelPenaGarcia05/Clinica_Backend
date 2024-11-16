@@ -1,10 +1,14 @@
 package com.clinicavillegas.application.models;
 
+import java.time.LocalDateTime;
+
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -20,22 +24,22 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 public class TipoTratamiento {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column()
+    @Column(length = 60)
     private String nombre;
 
-    @Column()
     private boolean estado;
 
     @CreatedDate
     @Column(name = "fecha_creacion")
-    private String fechaCreacion;
+    private LocalDateTime fechaCreacion;
 
     @LastModifiedDate
     @Column(name = "fecha_modificacion")
-    private String fechaModificacion;
+    private LocalDateTime fechaModificacion;
 }

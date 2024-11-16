@@ -9,12 +9,16 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 @Getter
 @Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 public class Comentario {
 
     @Id
@@ -22,6 +26,8 @@ public class Comentario {
     private Long id;
 
     private String contenido;
+
+    @CreatedDate
     private LocalDateTime fecha;
 
     @ManyToOne

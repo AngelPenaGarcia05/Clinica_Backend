@@ -14,7 +14,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 public class ApiReniecService {
- 
+
     private final RestTemplate restTemplate;
 
     @Autowired

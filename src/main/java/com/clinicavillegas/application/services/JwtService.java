@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import com.clinicavillegas.application.models.Usuario;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -28,6 +30,12 @@ public class JwtService {
 
     public String getToken(Map<String, Object> extraClaims, UserDetails user) {
         extraClaims.put("role", user.getAuthorities().stream().findFirst().get().getAuthority());
+        if (user instanceof Usuario) {
+            Usuario usuario = (Usuario) user;
+            extraClaims.put("id", usuario.getId());
+            extraClaims.put("nombres", usuario.getApellidoPaterno() + " " + usuario.getApellidoMaterno() + ", " + usuario.getNombres());
+            extraClaims.put("imagenPerfil", usuario.getImagenPerfil());
+        }
         return Jwts.builder()
             .setClaims(extraClaims)
             .setSubject(user.getUsername())

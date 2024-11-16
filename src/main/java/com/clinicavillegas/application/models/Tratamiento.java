@@ -4,14 +4,18 @@ import java.util.List;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -31,21 +35,18 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 public class Tratamiento {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    private String nombre;
     @Column()
     private String descripcion;
     
-    @Column()
     private BigDecimal costo;
-
-    @Column()
+    private Duration duracion;
     private boolean estado;
-
-    @Column()
     private String imagenURL;
     
     @ManyToOne
@@ -54,11 +55,11 @@ public class Tratamiento {
 
     @CreatedDate
     @Column(name = "fecha_creacion")
-    private String fechaCreacion;
+    private LocalDateTime fechaCreacion;
 
     @LastModifiedDate
     @Column(name = "fecha_modificacion")
-    private String fechaModificacion;
+    private LocalDateTime fechaModificacion;
 
     @OneToMany(mappedBy = "tratamiento", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore

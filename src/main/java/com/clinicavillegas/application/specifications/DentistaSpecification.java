@@ -14,7 +14,7 @@ public class DentistaSpecification {
             if (nombre == null) {
                 return cb.conjunction();
             }
-            return cb.equal(root.get("nombre"), nombre);
+            return cb.like(cb.lower(root.get("nombre")), "%" + nombre.toLowerCase() + "%");
         };
     }
 

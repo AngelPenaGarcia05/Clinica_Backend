@@ -1,8 +1,6 @@
 package com.clinicavillegas.application.dto;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalTime;
+import com.clinicavillegas.application.models.TipoDocumento;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,20 +11,16 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CitaRequest {
-    LocalDate fecha;
-    LocalTime hora;
-    BigDecimal monto;
-
+public class DentistaResponse {
+    Long id;
+    String nColegiatura;
+    boolean estado;
+    String especializacion;
     String nombres;
     String apellidoPaterno;
     String apellidoMaterno;
-    String tipoDocumento;
+    TipoDocumento tipoDocumento;
     String numeroIdentidad;
     String sexo;
-    LocalDate fechaNacimiento;
-
-    Long dentistaId;
-    Long usuarioId;
-    Long tratamientoId;
+    String fechaNacimiento;
 }

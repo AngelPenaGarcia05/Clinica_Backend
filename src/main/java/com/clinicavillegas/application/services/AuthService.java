@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import com.clinicavillegas.application.dto.JwtResponse;
 import com.clinicavillegas.application.dto.LoginRequest;
 import com.clinicavillegas.application.dto.RegisterRequest;
+import com.clinicavillegas.application.models.Rol;
+import com.clinicavillegas.application.models.Sexo;
 import com.clinicavillegas.application.models.TipoDocumento;
 import com.clinicavillegas.application.models.Usuario;
 import com.clinicavillegas.application.repositories.TipoDocumentoRepository;
@@ -44,7 +46,7 @@ public class AuthService {
     }
 
     public JwtResponse register(RegisterRequest request) {
-        TipoDocumento tipoDocumento = tipoDocumentoRepository.findByNombre(request.getTipoDocumento()).orElseThrow();
+        TipoDocumento tipoDocumento = tipoDocumentoRepository.findByAcronimo(request.getTipoDocumento()).orElseThrow();
         
         Usuario usuario = Usuario.builder()
                 .correo(request.getCorreo())
@@ -55,7 +57,9 @@ public class AuthService {
                 .apellidoMaterno(request.getApellidoMaterno())
                 .fechaNacimiento(request.getFechaNacimiento())
                 .telefono(request.getTelefono())
-                .sexo(request.getSexo())
+                .estado(true)
+                .rol(Rol.PACIENTE)
+                .sexo(Sexo.valueOf(request.getSexo()))
                 .contrasena(passwordEncoder.encode(request.getContrasena()))
                 .build();
 

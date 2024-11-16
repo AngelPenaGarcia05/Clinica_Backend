@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -37,20 +39,27 @@ import jakarta.persistence.OneToMany;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 public class Usuario implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(length = 40)
     private String nombres;
+    @Column(length = 35)
     private String apellidoPaterno;
+    @Column(length = 35)
     private String apellidoMaterno;
     private String contrasena;
+    @Column(length = 25)
     private String numeroIdentidad;
-    private String sexo;
+    private Sexo sexo;
+    @Column(length = 9)
     private String telefono;
     private LocalDate fechaNacimiento;
+    @Column(length = 100)
     private String correo;
     private String imagenPerfil;
     private boolean estado;

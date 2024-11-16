@@ -1,0 +1,28 @@
+package com.clinicavillegas.application.specifications;
+
+import org.springframework.data.jpa.domain.Specification;
+
+import com.clinicavillegas.application.models.TipoDocumento;
+
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
+
+public class TipoDocumentoSpecification {
+    public static Specification<TipoDocumento> conNombre(String nombre) {
+        return (Root<TipoDocumento> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
+            if (nombre == null) {
+                return cb.conjunction();
+            }
+            return cb.like(cb.lower(root.get("nombre")), "%" + nombre.toLowerCase() + "%");
+        };
+    }
+    public static Specification<TipoDocumento> conAcronimo(String acronimo) {
+        return (Root<TipoDocumento> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
+            if (acronimo == null) {
+                return cb.conjunction();
+            }
+            return cb.like(cb.lower(root.get("acronimo")), "%" + acronimo.toLowerCase() + "%");
+        };
+    }
+}
