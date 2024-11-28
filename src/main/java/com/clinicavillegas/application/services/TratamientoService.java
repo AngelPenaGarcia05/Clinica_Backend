@@ -24,10 +24,13 @@ public class TratamientoService {
     public List<Tratamiento> obtenerTratamientos() {
         return tratamientoRepository.findAll();
     }
-    public List<Tratamiento> obtenerTratamientos(Long tipoId) {
-        Specification<Tratamiento> specs = TratamientoSpecification.tipoTratamientoEquals(tipoId);
+
+    public List<Tratamiento> obtenerTratamientos(Long tipoId, String nombre) {
+        Specification<Tratamiento> specs = TratamientoSpecification.tipoTratamientoEquals(tipoId)
+                .and(TratamientoSpecification.nombreEquals(nombre))
+                .and(TratamientoSpecification.estadoEquals(true));
         return tratamientoRepository.findAll(specs);
-        
+
     }
 
     public Tratamiento obtenerTratamiento(Long id) {
@@ -47,15 +50,17 @@ public class TratamientoService {
         tratamientoRepository.save(tratamiento);
     }
 
-    public void actualizarTratamiento(Long id,TratamientoRequest request) {
+    public void actualizarTratamiento(Long id, TratamientoRequest request) {
         Tratamiento tratamiento = tratamientoRepository.findById(id).orElse(null);
         if (tratamiento != null) {
             tratamiento.setNombre(request.getNombre());
             tratamiento.setDescripcion(request.getDescripcion());
             tratamiento.setCosto(request.getCosto());
+            tratamiento.setDuracion(Duration.ofMinutes(request.getDuracion()));
             tratamiento.setImagenURL(request.getImagenURL());
             tratamiento.setEstado(true);
-            tratamiento.setTipoTratamiento(tipoTratamientoRepository.findById(request.getTipoTratamientoId()).orElse(null));
+            tratamiento.setTipoTratamiento(
+                    tipoTratamientoRepository.findById(request.getTipoTratamientoId()).orElse(null));
             tratamientoRepository.save(tratamiento);
         }
     }

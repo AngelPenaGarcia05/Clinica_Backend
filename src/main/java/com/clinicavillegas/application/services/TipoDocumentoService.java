@@ -16,14 +16,13 @@ public class TipoDocumentoService {
     @Autowired
     private TipoDocumentoRepository tipoDocumentoRepository;
 
-    public void agregarTipoDocumento(TipoDocumentoRequest request){
+    public void agregarTipoDocumento(TipoDocumentoRequest request) {
         tipoDocumentoRepository.save(
-            TipoDocumento.builder()
-            .nombre(request.getNombre())
-            .acronimo(request.getAcronimo())
-            .estado(true)
-            .build()
-        );
+                TipoDocumento.builder()
+                        .nombre(request.getNombre())
+                        .acronimo(request.getAcronimo())
+                        .estado(true)
+                        .build());
     }
 
     public List<TipoDocumento> obtenerTiposDocumento() {
@@ -31,7 +30,8 @@ public class TipoDocumentoService {
     }
 
     public List<TipoDocumento> obtenerTiposDocumento(String nombre, String acronimo) {
-        Specification<TipoDocumento> specs = TipoDocumentoSpecification.conNombre(nombre).and(TipoDocumentoSpecification.conAcronimo(acronimo));
+        Specification<TipoDocumento> specs = TipoDocumentoSpecification.conNombre(nombre)
+                .and(TipoDocumentoSpecification.conAcronimo(acronimo).and(TipoDocumentoSpecification.conEstado(true)));
         return tipoDocumentoRepository.findAll(specs);
     }
 
@@ -49,7 +49,6 @@ public class TipoDocumentoService {
     }
 
     public TipoDocumento obtenerTipoDocumento(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'obtenerTipoDocumento'");
+        return tipoDocumentoRepository.findById(id).get();
     }
 }

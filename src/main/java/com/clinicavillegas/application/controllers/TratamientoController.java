@@ -27,9 +27,10 @@ public class TratamientoController {
 
     @GetMapping
     public ResponseEntity<List<Tratamiento>> getTratamientos(
-        @RequestParam(name = "tipo", required = false) Long tipoId
+        @RequestParam(name = "tipo", required = false) Long tipoId,
+        @RequestParam(name = "nombre", required = false) String nombre
     ) {
-        return ResponseEntity.ok(tratamientoService.obtenerTratamientos(tipoId));
+        return ResponseEntity.ok(tratamientoService.obtenerTratamientos(tipoId, nombre));
     }
 
     @PostMapping

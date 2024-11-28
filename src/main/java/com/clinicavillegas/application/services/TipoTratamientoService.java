@@ -3,11 +3,13 @@ package com.clinicavillegas.application.services;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.clinicavillegas.application.dto.TipoTratamientoRequest;
 import com.clinicavillegas.application.models.TipoTratamiento;
 import com.clinicavillegas.application.repositories.TipoTratamientoRepository;
+import com.clinicavillegas.application.specifications.TipoTratamientoSpecification;
 
 @Service
 public class TipoTratamientoService {
@@ -15,7 +17,8 @@ public class TipoTratamientoService {
     private TipoTratamientoRepository tipoTratamientoRepository;
 
     public List<TipoTratamiento> obtenerTiposTratamiento() {
-        return tipoTratamientoRepository.findAll();
+        Specification<TipoTratamiento> specs = TipoTratamientoSpecification.conEstado(true);
+        return tipoTratamientoRepository.findAll(specs);
     }
 
     public void agregarTipoTratamiento(TipoTratamientoRequest request) {

@@ -26,11 +26,11 @@ public class HorarioController {
 
     @GetMapping
     public ResponseEntity<List<HorarioResponse>> obtenerHorarios(
-        @RequestParam(name = "dentistaId", required = true) Long dentistaId,
+        @RequestParam(name = "dentistaId", required = false) Long dentistaId,
         @RequestParam(name = "dia", required = false) String dia
 
     ){
-        return ResponseEntity.ok(horarioService.obtenerHorarios(dentistaId));
+        return ResponseEntity.ok(horarioService.obtenerHorarios(dentistaId, dia));
     }
 
 

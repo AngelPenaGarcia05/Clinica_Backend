@@ -25,4 +25,12 @@ public class TipoDocumentoSpecification {
             return cb.like(cb.lower(root.get("acronimo")), "%" + acronimo.toLowerCase() + "%");
         };
     }
+    public static Specification<TipoDocumento> conEstado(Boolean estado) {
+        return (Root<TipoDocumento> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
+            if (estado == null) {
+                return cb.conjunction();
+            }
+            return cb.equal(root.get("estado"), estado);
+        };
+    }
 }

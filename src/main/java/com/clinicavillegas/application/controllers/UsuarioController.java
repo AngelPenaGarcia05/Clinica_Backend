@@ -10,10 +10,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.clinicavillegas.application.dto.UsuarioRequest;
-import com.clinicavillegas.application.models.Usuario;
+import com.clinicavillegas.application.dto.UsuarioResponse;
 import com.clinicavillegas.application.services.UsuarioService;
 
 @RestController
@@ -23,12 +24,15 @@ public class UsuarioController {
     private UsuarioService usuarioService;
 
     @GetMapping
-    public ResponseEntity<List<Usuario>> obtenerClientes() {
-        return ResponseEntity.ok(usuarioService.obtenerClientes());
+    public ResponseEntity<List<UsuarioResponse>> obtenerClientes(
+        @RequestParam(name = "nombre", required = false) String nombre,
+        @RequestParam(name = "rol", required = false) String rol
+    ) {
+        return ResponseEntity.ok(usuarioService.obtenerClientes(nombre, rol));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Usuario> obtenerClientePorId(@PathVariable Long id){
+    public ResponseEntity<UsuarioResponse> obtenerClientePorId(@PathVariable Long id){
         return ResponseEntity.ok(usuarioService.obtenerClientePorId(id));
     }
 

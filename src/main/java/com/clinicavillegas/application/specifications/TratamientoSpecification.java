@@ -17,4 +17,20 @@ public class TratamientoSpecification {
             return cb.equal(root.get("tipoTratamiento").get("id"), tipoId);
         };
     }
+    public static Specification<Tratamiento> estadoEquals(Boolean estado) {
+        return (Root<Tratamiento> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
+            if (estado == null) {
+                return cb.conjunction();
+            }
+            return cb.equal(root.get("estado"), estado);
+        };
+    }
+    public static Specification<Tratamiento> nombreEquals(String nombre) {
+        return (Root<Tratamiento> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
+            if (nombre == null) {
+                return cb.conjunction();
+            }
+            return cb.like(cb.lower(root.get("nombre")), "%" + nombre.toLowerCase() + "%");
+        };
+    }
 }

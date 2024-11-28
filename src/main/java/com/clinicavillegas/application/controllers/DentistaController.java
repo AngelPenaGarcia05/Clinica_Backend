@@ -25,9 +25,10 @@ public class DentistaController {
     @GetMapping
     public ResponseEntity<List<DentistaResponse>> obtenerDentistas(
         @RequestParam(name = "nombre", required = false) String nombre,
-        @RequestParam(name = "especializacion", required = false) String especializacion
+        @RequestParam(name = "especializacion", required = false) String especializacion,
+        @RequestParam(name = "usuarioId", required = false) Long usuarioId
     ) {
-        List<DentistaResponse> dentistas = dentistaService.obtenerDentistas(nombre, especializacion);
+        List<DentistaResponse> dentistas = dentistaService.obtenerDentistas(nombre, especializacion, usuarioId);
         return ResponseEntity.ok(dentistas);
     }
 

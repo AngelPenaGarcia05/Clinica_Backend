@@ -8,7 +8,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.clinicavillegas.application.repositories.DentistaRepository;
-import com.clinicavillegas.application.repositories.TipoDocumentoRepository;
 import com.clinicavillegas.application.repositories.UsuarioRepository;
 import com.clinicavillegas.application.specifications.DentistaSpecification;
 import com.clinicavillegas.application.dto.DentistaRequest;
@@ -28,9 +27,10 @@ public class DentistaService {
     public List<Dentista> obtenerDentistas() {
         return dentistaRepository.findAll();
     }
-    public List<DentistaResponse> obtenerDentistas(String nombre, String especializacion) {
+    public List<DentistaResponse> obtenerDentistas(String nombre, String especializacion, Long usuarioId) {
         Specification<Dentista> specs = DentistaSpecification.conNombre(nombre)
-            .and(DentistaSpecification.conEspecializacion(especializacion));
+            .and(DentistaSpecification.conEspecializacion(especializacion))
+            .and(DentistaSpecification.conEstado(true));
         List<Dentista> dentistas = dentistaRepository.findAll(specs);
         List<DentistaResponse> dentistasResponse = new ArrayList<>();
         for (Dentista dentista : dentistas) {
@@ -45,6 +45,7 @@ public class DentistaService {
                 .tipoDocumento(dentista.getUsuario().getTipoDocumento())
                 .numeroIdentidad(dentista.getUsuario().getNumeroIdentidad())
                 .sexo(dentista.getUsuario().getSexo().toString())
+                .telefono(dentista.getUsuario().getTelefono())
                 .fechaNacimiento(dentista.getUsuario().getFechaNacimiento().toString())
                 .build());
         }
