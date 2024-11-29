@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import org.springframework.data.jpa.domain.Specification;
 
 import com.clinicavillegas.application.models.Cita;
+import com.clinicavillegas.application.models.Sexo;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -41,6 +42,31 @@ public class CitaSpecifications {
                 return cb.conjunction();
             }
             return cb.equal(root.get("fecha"), fecha);
+        };
+    }
+    public static Specification<Cita> conRangoFecha(LocalDate startDate, LocalDate endDate) {
+        return (Root<Cita> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
+            if (startDate == null || endDate == null) {
+                return cb.conjunction();
+            }
+            return cb.between(root.get("fecha"), startDate, endDate);
+        };
+    }
+
+    public static Specification<Cita> conTratamientoId(Long tratamientoId) {
+        return (Root<Cita> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
+            if (tratamientoId == null) {
+                return cb.conjunction();
+            }
+            return cb.equal(root.get("tratamiento").get("id"), tratamientoId);
+        };
+    }
+    public static Specification<Cita> conSexo(String sexo) {
+        return (Root<Cita> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
+            if (sexo == null) {
+                return cb.conjunction();
+            }
+            return cb.equal(root.get("sexo"), Sexo.valueOf(sexo.toUpperCase()));
         };
     }
 }

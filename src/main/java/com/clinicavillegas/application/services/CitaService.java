@@ -16,11 +16,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import com.clinicavillegas.application.dto.CitaCanceladaDTO;
+import com.clinicavillegas.application.dto.CitaDentistaDTO;
+import com.clinicavillegas.application.dto.CitaReprogramarRequest;
 import com.clinicavillegas.application.dto.CitaRequest;
 import com.clinicavillegas.application.dto.CitaResponse;
-import com.clinicavillegas.application.dto.CitasPorEstadoDTO;
-import com.clinicavillegas.application.dto.CitasPorMesDTO;
-import com.clinicavillegas.application.dto.CitasPorTratamientoDTO;
+import com.clinicavillegas.application.dto.CitaSexoDTO;
+import com.clinicavillegas.application.dto.CitaTipoTratamientoDTO;
 import com.clinicavillegas.application.dto.DentistaResponse;
 import com.clinicavillegas.application.dto.ValidacionCitaRequest;
 import com.clinicavillegas.application.models.Cita;
@@ -34,6 +36,11 @@ import com.clinicavillegas.application.repositories.TipoDocumentoRepository;
 import com.clinicavillegas.application.repositories.TratamientoRepository;
 import com.clinicavillegas.application.repositories.UsuarioRepository;
 import com.clinicavillegas.application.specifications.CitaSpecifications;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.pdf.PdfPTable;
 
 @Service
 public class CitaService {
@@ -53,9 +60,13 @@ public class CitaService {
     @Autowired
     private TipoDocumentoRepository tipoDocumentoRepository;
 
-    public List<CitaResponse> obtenerCitas(Long usuarioId, Long dentistaId, String estado) {
+    public List<CitaResponse> obtenerCitas(Long usuarioId, Long dentistaId, String estado, LocalDate fechaInicio,
+            LocalDate fechaFin, Long tratamientoId, String sexo) {
         Specification<Cita> specs = CitaSpecifications.conUsuarioId(usuarioId)
                 .and(CitaSpecifications.conDentistaId(dentistaId))
+                .and(CitaSpecifications.conRangoFecha(fechaInicio, fechaFin))
+                .and(CitaSpecifications.conTratamientoId(tratamientoId))
+                .and(CitaSpecifications.conSexo(sexo))
                 .and(CitaSpecifications.conEstado(estado));
         List<Cita> citas = citaRepository.findAll(specs);
         return citas.stream().map(cita -> CitaResponse.builder()
@@ -182,99 +193,336 @@ public class CitaService {
         return true;
     }
 
-    public List<CitasPorMesDTO> getCitasPorMesYSexo(int year, int month) {
-        if (month < 1 || month > 12) {
-            throw new IllegalArgumentException("Mes no válido");
-            
+    public List<CitaSexoDTO> countCitasByDateAndSexo(LocalDate startDate, LocalDate endDate) {
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la de fin");
         }
-        List<Object[]> resultados = citaRepository.countCitasByMonthAndSexo(year, month);
-
-        return resultados.stream()
-                .map(obj -> {
-                    int mes = ((Number) obj[0]).intValue(); // Primer argumento: mes
-                    Sexo sexo = Sexo.values()[((Number) obj[1]).intValue()]; // Segundo argumento: sexo
-                    long total = ((Number) obj[2]).longValue(); // Tercer argumento: total
-                    return new CitasPorMesDTO(mes, sexo, total);
-                })
+        return citaRepository.countCitasByDateAndSexo(startDate, endDate)
+                .stream()
+                .map(result -> new CitaSexoDTO(Sexo.values()[((Number) result[0]).intValue()].toString(), ((Number) result[1]).longValue()))
                 .collect(Collectors.toList());
     }
 
-    public List<CitasPorTratamientoDTO> getCitasPorTipoTratamiento(int year, int month) {
-        List<Object[]> resultados = citaRepository.countCitasByMonthAndTipoTratamiento(year, month);
-        return resultados.stream()
-                .map(obj -> {
-                    int mes = ((Number) obj[0]).intValue(); // Primer argumento: mes
-                    String tipoTratamiento = ((String) obj[1]).toUpperCase(); // Segundo argumento: tipoTratamiento
-                    long total = ((Number) obj[2]).longValue(); // Tercer argumento: total
-                    return new CitasPorTratamientoDTO(mes, tipoTratamiento, total);
-                })
+    public List<CitaTipoTratamientoDTO> countCitasByDateAndTipoTratamiento(LocalDate startDate, LocalDate endDate) {
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la de fin");
+        }
+        return citaRepository.countCitasByDateAndTipoTratamiento(startDate, endDate)
+                .stream()
+                .map(result -> new CitaTipoTratamientoDTO((String) result[0], ((Number) result[1]).longValue()))
                 .collect(Collectors.toList());
     }
 
-    public List<CitasPorEstadoDTO> getCitasPorEstadoReporte(int year, String estado){
-        List<Object[]> resultados = citaRepository.countCitasByMonthAndEstado(year, estado);
-        return resultados.stream()
-                .map(obj -> {
-                    int mes = ((Number) obj[0]).intValue(); // Primer argumento: mes
-                    long total = ((Number) obj[1]).longValue(); // Segundo argumento: total
-                    return new CitasPorEstadoDTO(mes, total);
-                })
+    public List<CitaCanceladaDTO> countCitasCanceladasByFecha(LocalDate startDate, LocalDate endDate) {
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la de fin");
+        }
+        return citaRepository.countCitasCanceladasByFecha(startDate, endDate)
+                .stream()
+                .map(result -> new CitaCanceladaDTO(LocalDate.parse(result[0].toString()), ((Number) result[1]).longValue()))
                 .collect(Collectors.toList());
     }
 
-    public JFreeChart createChartCitasPorMesYSexo(int year, int month) {
-        List<String> meses = List.of("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre");
+    public List<CitaDentistaDTO> countCitasAtendidasPorDentista(String estado, LocalDate startDate, LocalDate endDate) {
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la de fin");
+        }
+        return citaRepository.countCitasAtendidasPorDentista(estado, startDate, endDate)
+                .stream()
+                .map(result -> new CitaDentistaDTO(
+                        ((Number) result[0]).longValue(),
+                        (String) result[1],
+                        (String) result[2],
+                        ((Number) result[3]).longValue()))
+                .collect(Collectors.toList());
+    }
+
+    public JFreeChart createChartCitasPorSexo(LocalDate startDate, LocalDate endDate) {
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la de fin");
+        }
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        List<CitasPorMesDTO> resultados = getCitasPorMesYSexo(year, month);
-        for (CitasPorMesDTO resultado : resultados) {
-            dataset.addValue(resultado.getTotal(), meses.get(resultado.getMes() - 1) + "", resultado.getSexo().toString());
+        List<CitaSexoDTO> result = countCitasByDateAndSexo(startDate, endDate);
+        for (CitaSexoDTO dto : result) {
+            dataset.addValue(dto.getTotal(), dto.getSexo(), "");
         }
         CategoryDataset cds = dataset;
         return ChartFactory.createBarChart(
-            "Citas por sexo en el mes de " + meses.get(month - 1) + " " + year,
-            meses.get(month - 1),
-            "# de citas",
-            cds,
-            PlotOrientation.VERTICAL,
-            true, true, false
+                "Citas por sexo",
+                "Sexo",
+                "Cantidad",
+                cds,
+                PlotOrientation.VERTICAL,
+                true,
+                true,
+                false
         );
     }
 
-    public JFreeChart createChartCitasPorTipoTratamiento(int year, int month) {
-        List<String> meses = List.of("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre");
+    public PdfPTable createTableCitasPorSexo(LocalDate startDate, LocalDate endDate){
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la de fin");
+        }
+        List<Cita> citas = citaRepository.findAll(CitaSpecifications.conRangoFecha(startDate, endDate)
+                .and(CitaSpecifications.conEstado("Pendiente").or(CitaSpecifications.conEstado("Atendida"))));
+        //Mostrar los datos de las citas en la tabla
+        PdfPTable table = new PdfPTable(13);
+        table.setWidthPercentage(100);
+        table.setHorizontalAlignment(Element.ALIGN_CENTER);
+        table.setSpacingBefore(0);
+        table.setSpacingAfter(0);
+
+        //Cabecera de la tabla
+        Font styleFont = FontFactory.getFont(FontFactory.HELVETICA, 10, Font.BOLD);
+        table.addCell(new Phrase("Id", styleFont));
+        table.addCell(new Phrase("Nombres", styleFont));
+        table.addCell(new Phrase("Apellido Paterno", styleFont));
+        table.addCell(new Phrase("Apellido materno", styleFont));
+        table.addCell(new Phrase("Fecha", styleFont));
+        table.addCell(new Phrase("Hora", styleFont));
+        table.addCell(new Phrase("Tipo documento", styleFont));
+        table.addCell(new Phrase("Numero identidad", styleFont));
+        table.addCell(new Phrase("Sexo", styleFont));
+        table.addCell(new Phrase("Estado", styleFont));
+        table.addCell(new Phrase("Monto", styleFont));
+        table.addCell(new Phrase("Tratamiento", styleFont));
+        table.addCell(new Phrase("Dentista", styleFont));
+
+        //Añadir filas a la tabla
+        for (Cita cita : citas) {
+            table.addCell(cita.getId().toString());
+            table.addCell(cita.getNombres());
+            table.addCell(cita.getApellidoPaterno());
+            table.addCell(cita.getApellidoMaterno());
+            table.addCell(cita.getFecha().toString());
+            table.addCell(cita.getHora().toString());
+            table.addCell(cita.getTipoDocumento().getNombre());
+            table.addCell(cita.getNumeroIdentidad());
+            table.addCell(cita.getSexo().toString());
+            table.addCell(cita.getEstado());
+            table.addCell("S/ " +cita.getMonto());
+            table.addCell(cita.getTratamiento().getNombre());
+            table.addCell(cita.getDentista().getUsuario().getApellidoPaterno() + ", " + cita.getDentista().getUsuario().getNombres().charAt(0));
+        }
+        return table;
+    }
+
+    public JFreeChart createChartCitasPorTipoTratamiento(LocalDate startDate, LocalDate endDate) {
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la de fin");
+        }
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        List<CitasPorTratamientoDTO> resultados = getCitasPorTipoTratamiento(year, month);
-        for (CitasPorTratamientoDTO resultado : resultados) {
-            dataset.addValue(resultado.getTotal(), meses.get(resultado.getMes() - 1) + "", resultado.getTipoTratamiento());
+        List<CitaTipoTratamientoDTO> result = countCitasByDateAndTipoTratamiento(startDate, endDate);
+        for (CitaTipoTratamientoDTO dto : result) {
+            dataset.addValue(dto.getTotal(), dto.getTipoTratamiento(), "");
         }
         CategoryDataset cds = dataset;
         return ChartFactory.createBarChart(
-            "Citas por tipo de tratamiento en el mes de " + meses.get(month - 1) + " " + year,
-            "Tratamientos",
-            "# de citas",
-            cds,
-            PlotOrientation.VERTICAL,
-            true, true, false
+                "Citas por tipo de tratamiento",
+                "Tipo de tratamiento",
+                "Cantidad",
+                cds,
+                PlotOrientation.VERTICAL,
+                true,
+                true,
+                false
         );
     }
 
-    public JFreeChart createChartCitasPorEstado(int year, String estado) {
-        List<String> meses = List.of("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre");
+    public PdfPTable createTableCitasPorTipoTratamiento(LocalDate startDate, LocalDate endDate, Long tratamientoId){
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la de fin");
+        }
+        List<Cita> citas = citaRepository.findAll(CitaSpecifications.conRangoFecha(startDate, endDate)
+                .and(CitaSpecifications.conTratamientoId(tratamientoId))
+                .and(CitaSpecifications.conEstado("Pendiente").or(CitaSpecifications.conEstado("Atendida"))));
+        //Mostrar los datos de las citas en la tabla
+        PdfPTable table = new PdfPTable(13);
+        table.setWidthPercentage(100);
+        table.setHorizontalAlignment(Element.ALIGN_CENTER);
+        table.setSpacingBefore(0);
+        table.setSpacingAfter(0);
+
+        //Cabecera de la tabla
+        Font styleFont = FontFactory.getFont(FontFactory.HELVETICA, 10, Font.BOLD);
+        table.addCell(new Phrase("Id", styleFont));
+        table.addCell(new Phrase("Nombres", styleFont));
+        table.addCell(new Phrase("Apellido Paterno", styleFont));
+        table.addCell(new Phrase("Apellido materno", styleFont));
+        table.addCell(new Phrase("Fecha", styleFont));
+        table.addCell(new Phrase("Hora", styleFont));
+        table.addCell(new Phrase("Tipo documento", styleFont));
+        table.addCell(new Phrase("Numero identidad", styleFont));
+        table.addCell(new Phrase("Sexo", styleFont));
+        table.addCell(new Phrase("Estado", styleFont));
+        table.addCell(new Phrase("Monto", styleFont));
+        table.addCell(new Phrase("Tratamiento", styleFont));
+        table.addCell(new Phrase("Dentista", styleFont));
+
+        //Añadir filas a la tabla
+        for (Cita cita : citas) {
+            table.addCell(cita.getId().toString());
+            table.addCell(cita.getNombres());
+            table.addCell(cita.getApellidoPaterno());
+            table.addCell(cita.getApellidoMaterno());
+            table.addCell(cita.getFecha().toString());
+            table.addCell(cita.getHora().toString());
+            table.addCell(cita.getTipoDocumento().getNombre());
+            table.addCell(cita.getNumeroIdentidad());
+            table.addCell(cita.getSexo().toString());
+            table.addCell(cita.getEstado());
+            table.addCell("S/ " +cita.getMonto());
+            table.addCell(cita.getTratamiento().getNombre());
+            table.addCell(cita.getDentista().getUsuario().getApellidoPaterno() + ", " + cita.getDentista().getUsuario().getNombres().charAt(0));
+        }
+        return table;
+    }
+    
+    public JFreeChart createChartCitasCanceladas(LocalDate startDate, LocalDate endDate) {
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la de fin");
+        }
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        List<CitasPorEstadoDTO> resultados = getCitasPorEstadoReporte(year, estado);
-        for (int i = 0; i < resultados.size(); i++) {
-            CitasPorEstadoDTO resultado = resultados.get(i);
-            dataset.addValue(resultado.getTotal(), meses.get(resultado.getMes() - 1) + "", meses.get(resultado.getMes() - 1) + "");
-            
+        List<CitaCanceladaDTO> result = countCitasCanceladasByFecha(startDate, endDate);
+        for (CitaCanceladaDTO dto : result) {
+            dataset.addValue(dto.getTotal(), dto.getFecha().toString(), "");
         }
         CategoryDataset cds = dataset;
         return ChartFactory.createBarChart(
-            "Citas por Estado " + estado.toLowerCase() + " " + year,
-            "Categorías",
-            "Valores",
-            cds,
-            PlotOrientation.VERTICAL,
-            true, true, false
+                "Citas canceladas",
+                "Fecha",
+                "Cantidad",
+                cds,
+                PlotOrientation.VERTICAL,
+                true,
+                true,
+                false
         );
+    }
+
+    public PdfPTable createTableCitasCanceladas(LocalDate startDate, LocalDate endDate){
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la de fin");
+        }
+        List<Cita> citas = citaRepository.findAll(CitaSpecifications.conRangoFecha(startDate, endDate)
+                .and(CitaSpecifications.conEstado("Cancelada")));
+        //Mostrar los datos de las citas en la tabla
+        PdfPTable table = new PdfPTable(11);
+        table.setWidthPercentage(100);
+        table.setHorizontalAlignment(Element.ALIGN_CENTER);
+        table.setSpacingBefore(0);
+        table.setSpacingAfter(0);
+
+        //Cabecera de la tabla
+        Font styleFont = FontFactory.getFont(FontFactory.HELVETICA, 10, Font.BOLD);
+        table.addCell(new Phrase("Id", styleFont));
+        table.addCell(new Phrase("Nombres", styleFont));
+        table.addCell(new Phrase("Apellido Paterno", styleFont));
+        table.addCell(new Phrase("Apellido materno", styleFont));
+        table.addCell(new Phrase("Fecha", styleFont));
+        table.addCell(new Phrase("Hora", styleFont));
+        table.addCell(new Phrase("Tipo documento", styleFont));
+        table.addCell(new Phrase("Numero identidad", styleFont));
+        table.addCell(new Phrase("Sexo", styleFont));
+        table.addCell(new Phrase("Estado", styleFont));
+        table.addCell(new Phrase("Monto", styleFont));
+        table.addCell(new Phrase("Tratamiento", styleFont));
+        table.addCell(new Phrase("Dentista", styleFont));
+
+        //Añadir filas a la tabla
+        for (Cita cita : citas) {
+            table.addCell(cita.getId().toString());
+            table.addCell(cita.getNombres());
+            table.addCell(cita.getApellidoPaterno());
+            table.addCell(cita.getApellidoMaterno());
+            table.addCell(cita.getFecha().toString());
+            table.addCell(cita.getHora().toString());
+            table.addCell(cita.getTipoDocumento().getNombre());
+            table.addCell(cita.getNumeroIdentidad());
+            table.addCell(cita.getSexo().toString());
+            table.addCell(cita.getEstado());
+            table.addCell("S/ " +cita.getMonto());
+            table.addCell(cita.getTratamiento().getNombre());
+            table.addCell(cita.getDentista().getUsuario().getApellidoPaterno() + ", " + cita.getDentista().getUsuario().getNombres().charAt(0));
+        }
+        return table;
+    }
+    
+    public JFreeChart createChartCitasPorDentista(LocalDate startDate, LocalDate endDate) {
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la de fin");
+        }
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        List<CitaDentistaDTO> result = countCitasAtendidasPorDentista("Pendiente", startDate, endDate);
+        for (CitaDentistaDTO dto : result) {
+            dataset.addValue(dto.getTotal(), dto.getDentistaNombres(), "");
+        }
+        CategoryDataset cds = dataset;
+        return ChartFactory.createBarChart(
+                "Citas por dentista",
+                "Nombres",
+                "Cantidad",
+                cds,
+                PlotOrientation.VERTICAL,
+                true,
+                true,
+                false
+        );
+    }
+
+    public PdfPTable createTableCitasPorDentista(LocalDate startDate, LocalDate endDate, Long dentistaId){
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la de fin");
+        }
+        List<Cita> citas = citaRepository.findAll(CitaSpecifications.conRangoFecha(startDate, endDate)
+                .and(CitaSpecifications.conEstado("Pendiente").or(CitaSpecifications.conEstado("Atendida")))
+                .and(CitaSpecifications.conDentistaId(dentistaId)));
+        //Mostrar los datos de las citas en la tabla
+        PdfPTable table = new PdfPTable(13);
+        table.setWidthPercentage(100);
+        table.setHorizontalAlignment(Element.ALIGN_CENTER);
+        table.setSpacingBefore(0);
+        table.setSpacingAfter(0);
+
+        //Cabecera de la tabla
+        Font styleFont = FontFactory.getFont(FontFactory.HELVETICA, 10, Font.BOLD);
+        table.addCell(new Phrase("Id", styleFont));
+        table.addCell(new Phrase("Nombres", styleFont));
+        table.addCell(new Phrase("Apellido Paterno", styleFont));
+        table.addCell(new Phrase("Apellido materno", styleFont));
+        table.addCell(new Phrase("Fecha", styleFont));
+        table.addCell(new Phrase("Hora", styleFont));
+        table.addCell(new Phrase("Tipo documento", styleFont));
+        table.addCell(new Phrase("Numero identidad", styleFont));
+        table.addCell(new Phrase("Sexo", styleFont));
+        table.addCell(new Phrase("Estado", styleFont));
+        table.addCell(new Phrase("Monto", styleFont));
+        table.addCell(new Phrase("Tratamiento", styleFont));
+        table.addCell(new Phrase("Dentista", styleFont));
+
+        //Añadir filas a la tabla
+        for (Cita cita : citas) {
+            table.addCell(cita.getId().toString());
+            table.addCell(cita.getNombres());
+            table.addCell(cita.getApellidoPaterno());
+            table.addCell(cita.getApellidoMaterno());
+            table.addCell(cita.getFecha().toString());
+            table.addCell(cita.getHora().toString());
+            table.addCell(cita.getTipoDocumento().getNombre());
+            table.addCell(cita.getNumeroIdentidad());
+            table.addCell(cita.getSexo().toString());
+            table.addCell(cita.getEstado());
+            table.addCell("S/ " +cita.getMonto());
+            table.addCell(cita.getTratamiento().getNombre());
+            table.addCell(cita.getDentista().getUsuario().getApellidoPaterno() + ", " + cita.getDentista().getUsuario().getNombres().charAt(0));
+        }
+        return table;
+    }
+    
+    public void reprogramarCita(Long id, CitaReprogramarRequest request) {
+        Cita cita = citaRepository.findById(id).get();
+        cita.setHora(request.getHora());
+        cita.setFecha(request.getFecha());
+        citaRepository.save(cita);
     }
 }

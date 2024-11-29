@@ -40,13 +40,13 @@ public class HorarioService {
     }
 
     public void agregarHorario(HorarioRequest request) {
+        if (request.getHoraComienzo().isAfter(request.getHoraFin())) {
+            throw new IllegalArgumentException("La hora de finalización no puede ser anterior a la hora de inicio");
+        }
         //que haya un diferencia minima de 8 horas entre ellos
         if (Duration.between(request.getHoraComienzo(), request.getHoraFin()).abs().toHours() < 8) {
             throw new IllegalArgumentException("El tiempo de horario no puede ser menor a 8 horas");
             
-        }
-        if (request.getHoraComienzo().isAfter(request.getHoraFin())) {
-            throw new IllegalArgumentException("La hora de finalización no puede ser anterior a la hora de inicio");
         }
         Specification<Horario> specs = HorarioSpecification.conDentistaId(request.getDentistaId());
         List<Horario> horarios = horarioRepository.findAll(specs);

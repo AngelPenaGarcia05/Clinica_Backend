@@ -27,6 +27,9 @@ public class DentistaService {
     public List<Dentista> obtenerDentistas() {
         return dentistaRepository.findAll();
     }
+    public Dentista obtenerDentista(Long id) {
+        return dentistaRepository.findById(id).orElse(null);
+    }
     public List<DentistaResponse> obtenerDentistas(String nombre, String especializacion, Long usuarioId) {
         Specification<Dentista> specs = DentistaSpecification.conNombre(nombre)
             .and(DentistaSpecification.conEspecializacion(especializacion))
