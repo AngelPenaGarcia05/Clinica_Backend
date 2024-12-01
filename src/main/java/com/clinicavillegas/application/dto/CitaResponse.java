@@ -28,6 +28,7 @@ public class CitaResponse {
     TipoDocumento tipoDocumento;
     String numeroIdentidad;
     String sexo;
+    String telefono;
     LocalDate fechaNacimiento;
     String estado;
     DentistaResponse dentista;

@@ -16,9 +16,11 @@ public class DentistaResponse {
     String nColegiatura;
     boolean estado;
     String especializacion;
+    Long usuarioId;
     String nombres;
     String apellidoPaterno;
     String apellidoMaterno;
+    String correo;
     TipoDocumento tipoDocumento;
     String numeroIdentidad;
     String telefono;

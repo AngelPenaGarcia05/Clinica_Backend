@@ -25,6 +25,7 @@ import com.clinicavillegas.application.models.Dentista;
 import com.clinicavillegas.application.models.Tratamiento;
 import com.clinicavillegas.application.services.CitaService;
 import com.clinicavillegas.application.services.DentistaService;
+import com.clinicavillegas.application.services.ReporteService;
 import com.clinicavillegas.application.services.TratamientoService;
 import com.clinicavillegas.application.services.UsuarioService;
 import com.itextpdf.text.Chunk;
@@ -55,6 +56,9 @@ public class ReportesController {
     @Autowired
     private DentistaService dentistaService;
 
+    @Autowired
+    private ReporteService reporteService;
+
 
     @GetMapping("/sexo")
     public List<CitaSexoDTO> countCitasByDateAndSexo(
@@ -75,6 +79,7 @@ public class ReportesController {
         
         Document document = new Document(PageSize.A4.rotate());
         UsuarioResponse usuario = usuarioService.obtenerClientePorId(usuarioId);
+        reporteService.agregarReporte(1L, usuarioId);
         try (OutputStream out = response.getOutputStream()) {
             PdfWriter.getInstance(document, out);
             document.open();
@@ -120,6 +125,7 @@ public class ReportesController {
         
         Document document = new Document(PageSize.A4.rotate());
         UsuarioResponse usuario = usuarioService.obtenerClientePorId(usuarioId);
+        reporteService.agregarReporte(2L, usuarioId);
         try (OutputStream out = response.getOutputStream()) {
             PdfWriter.getInstance(document, out);
             document.open();
@@ -171,6 +177,7 @@ public class ReportesController {
         
         Document document = new Document(PageSize.A4.rotate());
         UsuarioResponse usuario = usuarioService.obtenerClientePorId(usuarioId);
+        reporteService.agregarReporte(3L, usuarioId);
         try (OutputStream out = response.getOutputStream()) {
             PdfWriter.getInstance(document, out);
             document.open();
@@ -209,6 +216,7 @@ public class ReportesController {
     public void obtenerEstadisticasPorDentista(
         @RequestParam(name = "startDate", required = true) String startDate,        
         @RequestParam(name = "endDate", required = true) String endDate,
+        @RequestParam(name = "estado", required = true) String estado,
         @RequestParam(name = "usuarioId", required = true) Long usuarioId,
         HttpServletResponse response
     ) throws IOException, DocumentException {
@@ -217,6 +225,7 @@ public class ReportesController {
         
         Document document = new Document(PageSize.A4.rotate());
         UsuarioResponse usuario = usuarioService.obtenerClientePorId(usuarioId);
+        reporteService.agregarReporte(4L, usuarioId);
         try (OutputStream out = response.getOutputStream()) {
             PdfWriter.getInstance(document, out);
             document.open();
@@ -235,7 +244,7 @@ public class ReportesController {
                 PdfPTable table = citaService.createTableCitasPorDentista(LocalDate.parse(startDate), LocalDate.parse(endDate), dentista.getId());
                 document.add(table);
             }
-            JFreeChart chart = citaService.createChartCitasPorDentista(LocalDate.parse(startDate), LocalDate.parse(endDate));
+            JFreeChart chart = citaService.createChartCitasPorDentista(LocalDate.parse(startDate), LocalDate.parse(endDate), estado);
             BufferedImage chartImage = chart.createBufferedImage(500, 400);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ImageIO.write(chartImage, "png", baos);

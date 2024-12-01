@@ -59,7 +59,7 @@ public class Usuario implements UserDetails {
     @Column(length = 9)
     private String telefono;
     private LocalDate fechaNacimiento;
-    @Column(length = 100)
+    @Column(length = 100, unique = true)
     private String correo;
     private String imagenPerfil;
     private boolean estado;

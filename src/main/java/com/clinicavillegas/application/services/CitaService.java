@@ -9,7 +9,11 @@ import java.util.stream.Collectors;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
+import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.ui.TextAnchor;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,6 +83,7 @@ public class CitaService {
                 .apellidoMaterno(cita.getApellidoMaterno())
                 .tipoDocumento(cita.getTipoDocumento())
                 .numeroIdentidad(cita.getNumeroIdentidad())
+                .telefono(cita.getUsuario().getTelefono())
                 .sexo(cita.getSexo().toString())
                 .estado(cita.getEstado())
                 .fechaNacimiento(cita.getFechaNacimiento())
@@ -247,7 +252,7 @@ public class CitaService {
             dataset.addValue(dto.getTotal(), dto.getSexo(), "");
         }
         CategoryDataset cds = dataset;
-        return ChartFactory.createBarChart(
+        JFreeChart chart = ChartFactory.createBarChart(
                 "Citas por sexo",
                 "Sexo",
                 "Cantidad",
@@ -257,6 +262,17 @@ public class CitaService {
                 true,
                 false
         );
+        CategoryPlot plot = chart.getCategoryPlot();
+        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+        renderer.setDefaultItemLabelGenerator(new StandardCategoryItemLabelGenerator());
+        renderer.setDefaultItemLabelsVisible(true);
+        renderer.setDefaultPositiveItemLabelPosition(
+                new org.jfree.chart.labels.ItemLabelPosition(
+                        org.jfree.chart.labels.ItemLabelAnchor.OUTSIDE12,
+                        TextAnchor.BOTTOM_CENTER
+                )
+        );
+        return chart;
     }
 
     public PdfPTable createTableCitasPorSexo(LocalDate startDate, LocalDate endDate){
@@ -317,7 +333,7 @@ public class CitaService {
             dataset.addValue(dto.getTotal(), dto.getTipoTratamiento(), "");
         }
         CategoryDataset cds = dataset;
-        return ChartFactory.createBarChart(
+        JFreeChart chart = ChartFactory.createBarChart(
                 "Citas por tipo de tratamiento",
                 "Tipo de tratamiento",
                 "Cantidad",
@@ -327,6 +343,17 @@ public class CitaService {
                 true,
                 false
         );
+        CategoryPlot plot = chart.getCategoryPlot();
+        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+        renderer.setDefaultItemLabelGenerator(new StandardCategoryItemLabelGenerator());
+        renderer.setDefaultItemLabelsVisible(true);
+        renderer.setDefaultPositiveItemLabelPosition(
+                new org.jfree.chart.labels.ItemLabelPosition(
+                        org.jfree.chart.labels.ItemLabelAnchor.OUTSIDE12,
+                        TextAnchor.BOTTOM_CENTER
+                )
+        );
+        return chart;
     }
 
     public PdfPTable createTableCitasPorTipoTratamiento(LocalDate startDate, LocalDate endDate, Long tratamientoId){
@@ -388,7 +415,7 @@ public class CitaService {
             dataset.addValue(dto.getTotal(), dto.getFecha().toString(), "");
         }
         CategoryDataset cds = dataset;
-        return ChartFactory.createBarChart(
+        JFreeChart chart = ChartFactory.createBarChart(
                 "Citas canceladas",
                 "Fecha",
                 "Cantidad",
@@ -398,6 +425,17 @@ public class CitaService {
                 true,
                 false
         );
+        CategoryPlot plot = chart.getCategoryPlot();
+        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+        renderer.setDefaultItemLabelGenerator(new StandardCategoryItemLabelGenerator());
+        renderer.setDefaultItemLabelsVisible(true);
+        renderer.setDefaultPositiveItemLabelPosition(
+                new org.jfree.chart.labels.ItemLabelPosition(
+                        org.jfree.chart.labels.ItemLabelAnchor.OUTSIDE12,
+                        TextAnchor.BOTTOM_CENTER
+                )
+        );
+        return chart;
     }
 
     public PdfPTable createTableCitasCanceladas(LocalDate startDate, LocalDate endDate){
@@ -407,7 +445,7 @@ public class CitaService {
         List<Cita> citas = citaRepository.findAll(CitaSpecifications.conRangoFecha(startDate, endDate)
                 .and(CitaSpecifications.conEstado("Cancelada")));
         //Mostrar los datos de las citas en la tabla
-        PdfPTable table = new PdfPTable(11);
+        PdfPTable table = new PdfPTable(13);
         table.setWidthPercentage(100);
         table.setHorizontalAlignment(Element.ALIGN_CENTER);
         table.setSpacingBefore(0);
@@ -448,17 +486,17 @@ public class CitaService {
         return table;
     }
     
-    public JFreeChart createChartCitasPorDentista(LocalDate startDate, LocalDate endDate) {
+    public JFreeChart createChartCitasPorDentista(LocalDate startDate, LocalDate endDate, String estado) {
         if (startDate.isAfter(endDate)) {
             throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la de fin");
         }
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        List<CitaDentistaDTO> result = countCitasAtendidasPorDentista("Pendiente", startDate, endDate);
+        List<CitaDentistaDTO> result = countCitasAtendidasPorDentista(estado, startDate, endDate);
         for (CitaDentistaDTO dto : result) {
             dataset.addValue(dto.getTotal(), dto.getDentistaNombres(), "");
         }
         CategoryDataset cds = dataset;
-        return ChartFactory.createBarChart(
+        JFreeChart chart = ChartFactory.createBarChart(
                 "Citas por dentista",
                 "Nombres",
                 "Cantidad",
@@ -468,6 +506,17 @@ public class CitaService {
                 true,
                 false
         );
+        CategoryPlot plot = chart.getCategoryPlot();
+        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+        renderer.setDefaultItemLabelGenerator(new StandardCategoryItemLabelGenerator());
+        renderer.setDefaultItemLabelsVisible(true);
+        renderer.setDefaultPositiveItemLabelPosition(
+                new org.jfree.chart.labels.ItemLabelPosition(
+                        org.jfree.chart.labels.ItemLabelAnchor.OUTSIDE12,
+                        TextAnchor.BOTTOM_CENTER
+                )
+        );
+        return chart;
     }
 
     public PdfPTable createTableCitasPorDentista(LocalDate startDate, LocalDate endDate, Long dentistaId){
