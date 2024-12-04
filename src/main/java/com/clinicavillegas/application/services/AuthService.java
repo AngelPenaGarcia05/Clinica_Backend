@@ -61,6 +61,7 @@ public class AuthService {
                 .rol(Rol.PACIENTE)
                 .sexo(Sexo.valueOf(request.getSexo()))
                 .contrasena(passwordEncoder.encode(request.getContrasena()))
+                .imagenPerfil("media/logo.jpg")
                 .build();
 
         usuarioRepository.save(usuario);

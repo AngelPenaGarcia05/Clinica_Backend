@@ -70,7 +70,12 @@ public class DentistaService {
     }
 
     public void actualizarDentista(Long id, DentistaRequest request) {
-        Dentista dentista = dentistaRepository.findById(id).get();
+        Dentista dentista = dentistaRepository.findById(id).orElseThrow();
+        Usuario usuarioAnterior = dentista.getUsuario();
+        usuarioAnterior.setRol(Rol.PACIENTE);
+        usuarioRepository.save(usuarioAnterior);
+        Usuario usuarioActual = usuarioRepository.findById(request.getUsuarioId()).orElseThrow();
+        dentista.setUsuario(usuarioActual);
         dentista.setNColegiatura(request.getNColegiatura());
         dentista.setEspecializacion(request.getEspecializacion());
         dentistaRepository.save(dentista);
