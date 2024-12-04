@@ -84,7 +84,7 @@ public class ReportesController {
             PdfWriter.getInstance(document, out);
             document.open();
             
-            Image logo = Image.getInstance("static/logo.jpg");
+            Image logo = Image.getInstance("https://675004d46f069406dc89078e--lighthearted-cactus-0e6177.netlify.app/media/logo.jpg");
             logo.scaleToFit(100, 100);
             document.add(logo);
             document.add(new Paragraph("Estadísticas de citas por sexo", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
@@ -130,7 +130,7 @@ public class ReportesController {
             PdfWriter.getInstance(document, out);
             document.open();
             
-            Image logo = Image.getInstance("static/logo.jpg");
+            Image logo = Image.getInstance("https://675004d46f069406dc89078e--lighthearted-cactus-0e6177.netlify.app/media/logo.jpg");
             logo.scaleToFit(100, 100);
             document.add(logo);
             document.add(new Paragraph("Estadísticas de citas por tipo de tratamiento", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
@@ -182,7 +182,7 @@ public class ReportesController {
             PdfWriter.getInstance(document, out);
             document.open();
             
-            Image logo = Image.getInstance("static/logo.jpg");
+            Image logo = Image.getInstance("https://675004d46f069406dc89078e--lighthearted-cactus-0e6177.netlify.app/media/logo.jpg");
             logo.scaleToFit(100, 100);
             document.add(logo);
             document.add(new Paragraph("Estadísticas de citas canceladas", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
@@ -230,7 +230,7 @@ public class ReportesController {
             PdfWriter.getInstance(document, out);
             document.open();
             
-            Image logo = Image.getInstance("static/logo.jpg");
+            Image logo = Image.getInstance("https://675004d46f069406dc89078e--lighthearted-cactus-0e6177.netlify.app/media/logo.jpg");
             logo.scaleToFit(100, 100);
             document.add(logo);
             document.add(new Paragraph("Estadísticas de citas por dentista", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
