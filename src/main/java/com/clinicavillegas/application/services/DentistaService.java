@@ -8,11 +8,13 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.clinicavillegas.application.repositories.DentistaRepository;
+import com.clinicavillegas.application.repositories.HorarioRepository;
 import com.clinicavillegas.application.repositories.UsuarioRepository;
 import com.clinicavillegas.application.specifications.DentistaSpecification;
 import com.clinicavillegas.application.dto.DentistaRequest;
 import com.clinicavillegas.application.dto.DentistaResponse;
 import com.clinicavillegas.application.models.Dentista;
+import com.clinicavillegas.application.models.Horario;
 import com.clinicavillegas.application.models.Rol;
 import com.clinicavillegas.application.models.Usuario;
 
@@ -23,6 +25,9 @@ public class DentistaService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private HorarioRepository horarioRepository;
 
     public List<Dentista> obtenerDentistas() {
         return dentistaRepository.findAll();
@@ -83,8 +88,15 @@ public class DentistaService {
 
     public void eliminarDentista(Long id) {
         Dentista dentista = dentistaRepository.findById(id).get();
-        dentista.setEstado(false);
-        dentistaRepository.save(dentista);
+        //obtener horarios del dentista
+        List<Horario> horarios = horarioRepository.findByDentista(dentista);
+        for (Horario horario : horarios) {
+            horarioRepository.delete(horario);
+        }
+        Usuario usuario = dentista.getUsuario();
+        usuario.setRol(Rol.PACIENTE);
+        usuarioRepository.save(usuario);
+        dentistaRepository.delete(dentista);
     }
     public List<String> obtenerEspecialidades() {
         return dentistaRepository.findEspecializaciones();
